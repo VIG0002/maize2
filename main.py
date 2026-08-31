@@ -82,6 +82,7 @@ visited = set()
 US_NINETY_DEGREES = 97
 
 CS_PIN = INPUT_4
+CS = ColorSensor(CS_PIN)
 CS_MIDPOINT = Point(0, 0) # technically 'ctrpoint'
 
 LEFT_TS_PIN = INPUT_1
@@ -113,6 +114,24 @@ class Node:
 
 def us_distance():
     return US.distance_centimeters * 10
+
+def color() -> Color:
+    return Color(CS.color)
+
+def tile_type() -> TileType:
+    color_value = color()        i
+    if CS.reflected_light_intensity >= REFLECTED_LIGHT_THRESHOLD:
+        return TileType.START
+    elif color_value == Color.WHITE:
+        return TileType.NORMAL
+    elif color_value == Color.BLACK:
+        return TileType.NOGO
+    elif color_value == Color.RED:
+        return TileType.HARMED_VICTIM
+    elif color_value == Color.GREEN:
+        return TileType.UNHARMED_VICTIM
+    else:
+        return TileType.NORMAL # default to normal if unknown color
 
 def us_turn_to(direction: Direction):
     global US_REL_DIRECTION
