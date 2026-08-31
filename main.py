@@ -119,7 +119,7 @@ def color() -> Color:
     return Color(CS.color)
 
 def tile_type() -> TileType:
-    color_value = color()        i
+    color_value = color()        
     if CS.reflected_light_intensity >= REFLECTED_LIGHT_THRESHOLD:
         return TileType.START
     elif color_value == Color.WHITE:
