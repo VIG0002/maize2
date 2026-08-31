@@ -94,10 +94,13 @@ DISTANCE_BETWEEN_ORIGIN_AND_TURNING_ORIGIN = CS_MIDPOINT.distance(WHEEL_MIDPOINT
 MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
 
 REFLECTED_LIGHT_THRESHOLD = 75
+
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
+TURNING_DEGREES = 90
+TIMESLEEP = 400/1000
 
 def wait():
-    time.sleep(400 / 1000)
+    time.sleep(TIMESLEEP)
 
 class Node:
     def __init__(self):
@@ -155,10 +158,10 @@ def move_backward():
     DRIVE.on_for_distance(SPEED * -1, MAX_WALL_DETECTION_DISTANCE) # For now
 
 def turn_anticlockwise():
-    DRIVE.turn_degrees(SPEED * -1, 45) # For now
+    DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES) # For now
 
 def turn_clockwise():
-    DRIVE.turn_degrees(SPEED, 45) # For now
+    DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
 
 def move_to(direction: Direction):
     move_backward()
@@ -167,7 +170,7 @@ def move_to(direction: Direction):
     elif direction == Direction.EAST:
         turn_clockwise()
     move_forward()
-    DRIVE.turn_degrees(SPEED, 90-45) # Turn straight after moving to the new node
+    DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
     last_move = direction
 
 def move_back(last_move: Direction):
@@ -197,7 +200,6 @@ def dfs(node: Node):
             move_to(d)
             dfs(neighbour)
             move_back(d)
-
 
 if __name__ == "__main__":
     dfs(Node()) 
