@@ -78,6 +78,7 @@ US_MOTOR_POLARITY = Motor.POLARITY_NORMAL
 US_MOTOR_SPEED = Speed.SLOW
 US_REL_DIRECTION = Direction.NORTH
 visited = set()
+victim_number = 0
 
 US_NINETY_DEGREES = 97
 
@@ -105,6 +106,8 @@ def wait():
 class Node:
     def __init__(self):
         self.neighbours = {}
+        self.tile_type = None
+        self.victim_number = None
 
     def get_neighbour(self, direction: Direction) -> 'Node':
         return self.neighbours[direction]
@@ -197,12 +200,12 @@ def move_back(last_move: Direction):
     elif last_move == Direction.EAST:
         turn_anticlockwise()
     move_backward()
-
+    
 def opposite(direction: Direction) -> Direction:
     return Direction((direction + 180) % 360)
 
 def dfs(node: Node):
-    global visited
+    global visited, victim_number
     visited.add(node)
     open_directions = look_around()
     for d in open_directions:
@@ -215,8 +218,21 @@ def dfs(node: Node):
 
         if neighbour not in visited:
             move_to(d)
+
+            neighbour.tile_type = tile_type()
+
+            if neighbour.tile_type == TileType.NOGO:
+                move_back(d)
+                continue
+
+            if neighbour.tile_type in [TileType.HARMED_VICTIM, TileType.UNHARMED_VICTIM]:
+                victim_number += 1
+                neighbour.victim_number = victim_number
+
             dfs(neighbour)
             move_back(d)
 
 if __name__ == "__main__":
-    dfs(Node()) 
+    start = Node()
+    start.tile_type = TileType.START
+    dfs(start) 
