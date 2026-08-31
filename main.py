@@ -56,8 +56,7 @@ VICTIM_WIDTH = 50
 
 TILE_HALF_WIDTH = TILE_WIDTH / 2
 
-# ROBOT:
-# all coordinates are relative to the robot origin
+# ROBOT: all coordinates are relative to the robot origin
 SPEED = Speed.SLOW
 
 ROBOT_WIDTH = 135
@@ -171,7 +170,6 @@ def move_to(direction: Direction):
         turn_clockwise()
     move_forward()
     DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
-    last_move = direction
 
 def move_back(last_move: Direction):
     move_forward()
