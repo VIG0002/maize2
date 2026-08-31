@@ -78,7 +78,8 @@ US_MOTOR_MIDPOINT = Point(0, -52)
 US_MOTOR_POLARITY = Motor.POLARITY_NORMAL
 US_MOTOR_SPEED = Speed.SLOW
 US_REL_DIRECTION = Direction.NORTH
-US_DISTANCE = US.distance_centimeters * 10
+visited = set()
+
 US_NINETY_DEGREES = 97
 
 CS_PIN = INPUT_4
@@ -96,14 +97,23 @@ REFLECTED_LIGHT_THRESHOLD = 75
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
 
 def wait():
-    """Sleep a short amount of time between movements, to prevent jamming"""
     time.sleep(400 / 1000)
 
 class Node:
+    def __init__(self):
+        self.neighbours = {}
+
     def get_neighbour(self, direction: Direction) -> 'Node':
-        ...
+        return self.neighbours[direction]
+
+    def set_neighbour(self, direction: Direction, neighbour: 'Node'):
+        self.neighbours[direction] = neighbour
+
+def us_distance():
+    return US.distance_centimeters * 10
 
 def us_turn_to(direction: Direction):
+    global US_REL_DIRECTION
     assert direction != Direction.SOUTH
     assert US_REL_DIRECTION != Direction.SOUTH
 
@@ -122,12 +132,16 @@ def us_turn_to(direction: Direction):
     US_REL_DIRECTION = direction
     
 def is_open():
-    return US_DISTANCE > MAX_WALL_DETECTION_DISTANCE
+    return us_distance() > MAX_WALL_DETECTION_DISTANCE
 
 def look_around() -> List[Direction]:
     directions = []
-    
-    def add_if_open(direction: Direction):
+
+    for direction in [
+        Direction.NORTH,
+        Direction.EAST,
+        Direction.WEST,
+    ]:
         us_turn_to(direction)
         if is_open():
             directions.append(direction)
@@ -153,7 +167,7 @@ def move_to(direction: Direction):
     elif direction == Direction.EAST:
         turn_clockwise()
     move_forward()
-    DRIVE.turn_degrees(SPEED, 90) # Turn straight after moving to the new node
+    DRIVE.turn_degrees(SPEED, 90-45) # Turn straight after moving to the new node
     last_move = direction
 
 def move_back(last_move: Direction):
@@ -164,17 +178,26 @@ def move_back(last_move: Direction):
         turn_anticlockwise()
     move_backward()
 
+def opposite(direction: Direction) -> Direction:
+    return Direction((direction + 180) % 360)
+
 def dfs(node: Node):
-    visited = set()
+    global visited
     visited.add(node)
     open_directions = look_around()
     for d in open_directions:
-        neighbour = node.get_neighbour(d)
+        if d not in node.neighbours:
+            neighbour = Node()
+            node.set_neighbour(d, neighbour)
+            neighbour.set_neighbour(opposite(d), node)
+        else:
+            neighbour = node.get_neighbour(d)
+
         if neighbour not in visited:
-            visited.add(neighbour)
-            move_to(neighbour)
+            move_to(d)
             dfs(neighbour)
-            move_back()
+            move_back(d)
+
 
 if __name__ == "__main__":
     dfs(Node()) 
