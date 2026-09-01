@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-from enum import IntEnum, Enum
-from typing import List, Union
-from ev3dev2.motor import MoveDifferential, SpeedPercent, SpeedRPM, Motor, LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
-from ev3dev2.wheel import EV3Tire, Wheel
-from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
-from ev3dev2.sensor.lego import Sensor, TouchSensor, UltrasonicSensor, ColorSensor
+from enum import IntEnum, Enum # pyright: ignore
+from typing import List, Union # pyright: ignore
+from ev3dev2.motor import MoveDifferential, SpeedPercent, SpeedRPM, Motor, LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D # pyright: ignore
+from ev3dev2.wheel import EV3Tire, Wheel # pyright: ignore
+from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4 # pyright: ignore
+from ev3dev2.sensor.lego import Sensor, TouchSensor, UltrasonicSensor, ColorSensor # pyright: ignore
 from shapely.geometry import Point  # pyright: ignore[reportMissingModuleSource]
-from ev3dev2.sound import Sound
-from ev3dev2.led import Leds
+from ev3dev2.sound import Sound # pyright: ignore
+from ev3dev2.led import Leds # pyright: ignore
 import time
 import math
 
