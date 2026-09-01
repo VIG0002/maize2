@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 from enum import IntEnum, Enum
-from typing import List, Union, Optional
 from ev3dev2.motor import MoveDifferential, SpeedPercent, SpeedRPM, Motor, LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 from ev3dev2.wheel import EV3Tire, Wheel
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 from ev3dev2.sensor.lego import Sensor, TouchSensor, UltrasonicSensor, ColorSensor
-from shapely.geometry import Point  # pyright: ignore[reportMissingModuleSource]
+from shapely.geometry import Point
 from ev3dev2.sound import Sound
 from ev3dev2.led import Leds
 import time
 import math
-
-Numeric = Union[int, float] # type hint any number
 
 class Direction(IntEnum):
     """The four cardinal directions, whose values correspond to clockwise rotation relative to the positive y-axis"""
@@ -112,21 +109,21 @@ def wait():
 class Node:
     def __init__(self):
         self.neighbours = {}
-        self.tile_type = None # type: Optional[TileType]
+        self.tile_type = None
 
-    def get_neighbour(self, direction: Direction) -> 'Node':
+    def get_neighbour(self, direction):
         return self.neighbours[direction]
 
-    def set_neighbour(self, direction: Direction, neighbour: 'Node'):
+    def set_neighbour(self, direction, neighbour):
         self.neighbours[direction] = neighbour
 
 def us_distance():
     return US.distance_centimeters * 10
 
-def color() -> Color:
+def color():
     return Color(CS.color)
 
-def tile_type() -> TileType:
+def tile_type():
     color_value = color()        
     if CS.reflected_light_intensity >= REFLECTED_LIGHT_THRESHOLD:
         return TileType.START
@@ -141,7 +138,7 @@ def tile_type() -> TileType:
     else:
         return TileType.NORMAL # default to normal if unknown color
 
-def us_turn_to(direction: Direction):
+def us_turn_to(direction):
     global US_REL_DIRECTION
     assert direction != Direction.SOUTH
     assert US_REL_DIRECTION != Direction.SOUTH
@@ -163,7 +160,7 @@ def us_turn_to(direction: Direction):
 def is_open():
     return us_distance() > MAX_WALL_DETECTION_DISTANCE
 
-def look_around() -> List[Direction]:
+def look_around():
     directions = []
 
     for direction in [
@@ -189,7 +186,7 @@ def turn_anticlockwise():
 def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
 
-def move_to(direction: Direction):
+def move_to(direction):
     if tile_type() == TileType.START:
         # Adjust for error
         ...
@@ -204,7 +201,7 @@ def move_to(direction: Direction):
     if direction is Direction.WEST or direction is Direction.EAST:
         DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
 
-def move_back(last_move: Direction):
+def move_back(last_move):
     if last_move is not Direction.NORTH:
         move_forward()
     if last_move == Direction.WEST:
@@ -216,10 +213,10 @@ def move_back(last_move: Direction):
     if last_move is Direction.WEST or last_move is Direction.EAST:
         DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving back to the previous node
     
-def opposite(direction: Direction) -> Direction:
+def opposite(direction):
     return Direction((direction + 180) % 360)
 
-def dfs(node: Node):
+def dfs(node):
     global visited, harmed_victim_number, unharmed_victim_number
     visited.add(node)
     open_directions = look_around()
