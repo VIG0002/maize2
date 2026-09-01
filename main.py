@@ -99,6 +99,7 @@ REFLECTED_LIGHT_THRESHOLD = 75
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
 TURNING_DEGREES = 45
 TIMESLEEP = 200/1000
+LAST_TILE_WAS_START = None
 
 leds = Leds()
 sound = Sound()
@@ -175,10 +176,20 @@ def look_around():
     return directions
 
 def move_forward():
-    DRIVE.on_for_distance(SPEED, TILE_WIDTH) # For now
+    global LAST_TILE_WAS_START
+    if tile_type is TileType.START:
+        DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
+        LAST_TILE_WAS_START = True
+    else:
+        DRIVE.on_for_distance(SPEED, TILE_WIDTH)
+        LAST_TILE_WAS_START = False
+        
 
 def move_backward():
-    DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) # For now
+    if LAST_TILE_WAS_START is True:
+        DRIVE.on_for_distance(SPEED * -1, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
+    else:
+        DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) 
 
 def turn_anticlockwise():
     DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES) # For now
@@ -187,9 +198,6 @@ def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
 
 def move_to(direction):
-    if tile_type() == TileType.START:
-        # Adjust for error
-        ...
     if direction is not Direction.NORTH:
         move_backward()
     if direction == Direction.WEST:
