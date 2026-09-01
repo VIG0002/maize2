@@ -255,3 +255,5 @@ if __name__ == "__main__":
     start = Node()
     start.tile_type = TileType.START
     dfs(start) 
+    sound.Speak("Done")
+    leds.animate_rainbow() 
