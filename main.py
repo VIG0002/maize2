@@ -6,6 +6,8 @@ from ev3dev2.wheel import EV3Tire, Wheel
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 from ev3dev2.sensor.lego import Sensor, TouchSensor, UltrasonicSensor, ColorSensor
 from shapely.geometry import Point  # pyright: ignore[reportMissingModuleSource]
+from ev3dev2.sound import Sound
+from ev3dev2.led import Leds
 import time
 import math
 
@@ -98,8 +100,11 @@ MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
 REFLECTED_LIGHT_THRESHOLD = 75
 
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
-TURNING_DEGREES = 90
-TIMESLEEP = 400/1000
+TURNING_DEGREES = 45
+TIMESLEEP = 200/1000
+
+leds = Leds()
+sound = Sound()
 
 def wait():
     time.sleep(TIMESLEEP)
@@ -227,8 +232,21 @@ def dfs(node: Node):
 
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
+                wait()
+                sound.speak("Red")
+                leds.set_color("LEFT", "RED")
+                leds.set_color("RIGHT", "RED")
+                time.sleep(1000)
+                leds.reset()               
+
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
                 unharmed_victim_number += 1
+                wait()
+                sound.speak("Green")
+                leds.set_color("LEFT", "GREEN")
+                leds.set_color("RIGHT", "GREEN")
+                time.sleep(1000)
+                leds.reset()
 
             dfs(neighbour)
             move_back(d)
