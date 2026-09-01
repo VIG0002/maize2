@@ -190,6 +190,9 @@ def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
 
 def move_to(direction: Direction):
+    if tile_type() == TileType.START:
+        # Adjust for error
+        ...
     if direction is not Direction.NORTH:
         move_backward()
     if direction == Direction.WEST:
