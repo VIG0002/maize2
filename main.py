@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from enum import IntEnum, Enum
-from typing import List, Union
+from typing import List, Union, Optional
 from ev3dev2.motor import MoveDifferential, SpeedPercent, SpeedRPM, Motor, LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 from ev3dev2.wheel import EV3Tire, Wheel
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
@@ -112,7 +112,7 @@ def wait():
 class Node:
     def __init__(self):
         self.neighbours = {}
-        self.tile_type = None
+        self.tile_type = None # type: Optional[TileType]
 
     def get_neighbour(self, direction: Direction) -> 'Node':
         return self.neighbours[direction]
@@ -237,7 +237,7 @@ def dfs(node: Node):
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
                 time.sleep(1000)
-                leds.reset()               
+                leds.reset()
 
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
                 unharmed_victim_number += 1
@@ -255,5 +255,5 @@ if __name__ == "__main__":
     start = Node()
     start.tile_type = TileType.START
     dfs(start) 
-    sound.Speak("Done")
+    sound.speak("Done")
     leds.animate_rainbow() 
