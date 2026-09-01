@@ -178,10 +178,10 @@ def look_around() -> List[Direction]:
     return directions
 
 def move_forward():
-    DRIVE.on_for_distance(SPEED, TILE_WIDTH / 2) # For now
+    DRIVE.on_for_distance(SPEED, TILE_WIDTH) # For now
 
 def move_backward():
-    DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH / 2) # For now
+    DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) # For now
 
 def turn_anticlockwise():
     DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES) # For now
