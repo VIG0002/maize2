@@ -190,21 +190,28 @@ def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
 
 def move_to(direction: Direction):
-    move_backward()
+    if direction is not Direction.NORTH:
+        move_backward()
     if direction == Direction.WEST:
         turn_anticlockwise()
     elif direction == Direction.EAST:
         turn_clockwise()
-    move_forward()
-    DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
+    if direction is not Direction.SOUTH:
+        move_forward()
+    if direction is Direction.WEST or direction is Direction.EAST:
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
 
 def move_back(last_move: Direction):
-    move_forward()
+    if last_move is not Direction.NORTH:
+        move_forward()
     if last_move == Direction.WEST:
         turn_clockwise()
     elif last_move == Direction.EAST:
         turn_anticlockwise()
-    move_backward()
+    if last_move is not Direction.SOUTH:
+        move_backward()
+    if last_move is Direction.WEST or last_move is Direction.EAST:
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving back to the previous node
     
 def opposite(direction: Direction) -> Direction:
     return Direction((direction + 180) % 360)
