@@ -177,7 +177,7 @@ def look_around():
 
 def move_forward():
     global LAST_TILE_WAS_START
-    if tile_type is TileType.START:
+    if tile_type() is TileType.START:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
         LAST_TILE_WAS_START = True
     else:
@@ -196,18 +196,22 @@ def turn_anticlockwise():
 
 def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
-
+        
 def move_to(direction):
-    if direction is not Direction.NORTH:
-        move_backward()
-    if direction == Direction.WEST:
-        turn_anticlockwise()
-    elif direction == Direction.EAST:
-        turn_clockwise()
-    if direction is not Direction.SOUTH:
+    if direction is Direction.NORTH:
         move_forward()
-    if direction is Direction.WEST or direction is Direction.EAST:
-        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving to the new node
+    elif direction is Direction.SOUTH:
+        move_backward()
+    elif direction is Direction.WEST:
+        move_backward()
+        turn_anticlockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+    else:
+        move_backward()
+        turn_clockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
 
 def move_back(last_move):
     if last_move is not Direction.NORTH:
@@ -247,7 +251,6 @@ def dfs(node):
 
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
-                wait()
                 sound.speak("Red")
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
@@ -256,7 +259,6 @@ def dfs(node):
 
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
                 unharmed_victim_number += 1
-                wait()
                 sound.speak("Green")
                 leds.set_color("LEFT", "GREEN")
                 leds.set_color("RIGHT", "GREEN")
