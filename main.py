@@ -76,22 +76,12 @@ US_MOTOR_MIDPOINT = Point(0, -52)
 US_MOTOR_POLARITY = Motor.POLARITY_NORMAL
 US_MOTOR_SPEED = Speed.SLOW
 US_REL_DIRECTION = Direction.NORTH
-visited = set()
-harmed_victim_number = 0
-unharmed_victim_number = 0
-
 US_NINETY_DEGREES = 97
 
 CS_PIN = INPUT_4
 CS = ColorSensor(CS_PIN)
 CS_MIDPOINT = Point(0, 0) # technically 'ctrpoint'
 
-LEFT_TS_PIN = INPUT_1
-LEFT_TS_ENDPOINT = Point(- ROBOT_WIDTH / 2, - ROBOT_HEIGHT + 28)
-RIGHT_TS_PIN = INPUT_2
-RIGHT_TS_ENDPOINT = Point(ROBOT_WIDTH / 2, - ROBOT_HEIGHT + 28)
-
-DISTANCE_BETWEEN_ORIGIN_AND_TURNING_ORIGIN = CS_MIDPOINT.distance(WHEEL_MIDPOINT_GAP_MIDPOINT)
 MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
 
 REFLECTED_LIGHT_THRESHOLD = 75
@@ -99,13 +89,14 @@ REFLECTED_LIGHT_THRESHOLD = 75
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
 TURNING_DEGREES = 45
 TIMESLEEP = 200/1000
-LAST_TILE_WAS_START = None
+
+visited = set()
+harmed_victim_number = 0
+unharmed_victim_number = 0
+last_tile_was_start = None
 
 leds = Leds()
 sound = Sound()
-
-def wait():
-    time.sleep(TIMESLEEP)
 
 class Node:
     def __init__(self):
@@ -118,14 +109,8 @@ class Node:
     def set_neighbour(self, direction, neighbour):
         self.neighbours[direction] = neighbour
 
-def us_distance():
-    return US.distance_centimeters * 10
-
-def color():
-    return Color(CS.color)
-
 def tile_type():
-    color_value = color()        
+    color_value = Color(CS.color)       
     if CS.reflected_light_intensity >= REFLECTED_LIGHT_THRESHOLD:
         return TileType.START
     elif color_value == Color.WHITE:
@@ -158,9 +143,6 @@ def us_turn_to(direction):
 
     US_REL_DIRECTION = direction
     
-def is_open():
-    return us_distance() > MAX_WALL_DETECTION_DISTANCE
-
 def look_around():
     directions = []
 
@@ -170,23 +152,22 @@ def look_around():
         Direction.WEST,
     ]:
         us_turn_to(direction)
-        if is_open():
+        if (US.distance_centimeters * 10) > MAX_WALL_DETECTION_DISTANCE:
             directions.append(direction)
 
     return directions
 
 def move_forward():
-    global LAST_TILE_WAS_START
+    global last_tile_was_start
     if tile_type() is TileType.START:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
-        LAST_TILE_WAS_START = True
+        last_tile_was_start = True
     else:
         DRIVE.on_for_distance(SPEED, TILE_WIDTH)
-        LAST_TILE_WAS_START = False
-        
+        last_tile_was_start = False
 
 def move_backward():
-    if LAST_TILE_WAS_START is True:
+    if last_tile_was_start is True:
         DRIVE.on_for_distance(SPEED * -1, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
     else:
         DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) 
@@ -224,9 +205,6 @@ def move_back(last_move):
         move_backward()
     if last_move is Direction.WEST or last_move is Direction.EAST:
         DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving back to the previous node
-    
-def opposite(direction):
-    return Direction((direction + 180) % 360)
 
 def dfs(node):
     global visited, harmed_victim_number, unharmed_victim_number
@@ -236,7 +214,7 @@ def dfs(node):
         if d not in node.neighbours:
             neighbour = Node()
             node.set_neighbour(d, neighbour)
-            neighbour.set_neighbour(opposite(d), node)
+            neighbour.set_neighbour((Direction((d + 180) % 360)), node)
         else:
             neighbour = node.get_neighbour(d)
 
