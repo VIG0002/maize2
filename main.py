@@ -1,4 +1,91 @@
 #!/usr/bin/env python3
+"""
+That makes complete sense about the stall timeout in the source code—clever use of the built-in safety to handle the physical hard stops.
+Since you have already fixed the comparison operators, let's focus entirely on calibrating the direction tracking.
+To fix the issue where the robot's physical heading gets out of sync with the absolute map directions (North, East, South, West), you need to track the robot's absolute compass heading and use it to translate your movements and sensor scans.
+Here is exactly how to add that calibration logic to your existing functions:
+## 1. Add a Global Heading Variable
+At the top of your script (near your other global variables like visited), add a variable to track which absolute direction the robot chassis is currently facing:
+
+# Initialize the robot facing absolute NORTH at the start of the mazecurrent_heading = Direction.NORTH  
+
+## 2. Calibrate look_around()
+Right now, look_around() assumes its relative scans match the map. You need to calibrate the relative sensor direction (d_rel) using the current_heading to find the absolute map direction (d_abs):
+
+def look_around():
+    directions = []
+
+    for d_rel in [
+        Direction.NORTH,
+        Direction.EAST,
+        Direction.WEST,
+    ]:
+        us_turn_to(d_rel)
+        if (US.distance_centimeters * 10) > MAX_WALL_DETECTION_DISTANCE:
+            # Calibrate: Add current heading to the relative sensor angle
+            # Modulo 360 keeps the degree value within the Direction enum bounds (0, 90, 180, 270)
+            d_abs = Direction((current_heading + d_rel) % 360)
+            directions.append(d_abs)
+
+    return directions
+
+## 3. Calibrate move_to()
+When dfs() passes an absolute map direction to move_to(direction), the robot needs to calculate how to move relative to its current physical heading.
+You can find the relative movement required by subtracting current_heading from the target direction. Then, update the global heading afterward:
+
+def move_to(direction):
+    global current_heading
+    
+    # Calculate the required turn relative to where the robot is facing
+    rel_move = Direction((direction - current_heading + 360) % 360)
+
+    if rel_move == Direction.NORTH:
+        move_forward()
+    elif rel_move == Direction.SOUTH:
+        move_backward()
+    elif rel_move == Direction.WEST:
+        move_backward()
+        turn_anticlockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+    elif rel_move == Direction.EAST:
+        move_backward()
+        turn_clockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+
+    # Calibrate: Update our absolute heading to match the new tile's orientation
+    current_heading = direction
+
+## 4. Calibrate move_back()
+When backing out of a node during the DFS backtrack phase, you must reverse this logic so the global compass heading steps backward correctly:
+
+def move_back(last_move):
+    global current_heading
+    
+    # Calculate the original relative movement that got us here
+    # (Reconstructs what 'rel_move' was inside move_to)
+    rel_move = Direction((last_move - current_heading + 360) % 360)
+
+    if rel_move != Direction.NORTH:
+        move_forward()
+    if rel_move == Direction.WEST:
+        turn_clockwise()
+    elif rel_move == Direction.EAST:
+        turn_anticlockwise()
+    if rel_move != Direction.SOUTH:
+        move_backward()
+    if rel_move == Direction.WEST or rel_move == Direction.EAST:
+        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+
+    # Calibrate: Revert the absolute heading back to the previous tile's heading
+    # To step back, we subtract the change or compute it via the parent node's expected orientation
+    current_heading = Direction((last_move + 180) % 360) 
+
+Would you like to double-check the exact wheel turn angle math (90 - TURNING_DEGREES) to ensure the robot finishes perfectly square with the walls after its shift?
+
+
+"""
 from enum import IntEnum, Enum
 from ev3dev2.motor import MoveDifferential, SpeedPercent, Motor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 from ev3dev2.wheel import EV3Tire
@@ -158,7 +245,7 @@ def look_around():
 
 def move_forward():
     global last_tile_was_start
-    if tile_type() is TileType.START:
+    if tile_type() == TileType.START:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
         last_tile_was_start = True
     else:
@@ -166,7 +253,7 @@ def move_forward():
         last_tile_was_start = False
 
 def move_backward():
-    if last_tile_was_start is True:
+    if last_tile_was_start == True:
         DRIVE.on_for_distance(SPEED * -1, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
     else:
         DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) 
@@ -178,11 +265,11 @@ def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
         
 def move_to(direction):
-    if direction is Direction.NORTH:
+    if direction == Direction.NORTH:
         move_forward()
-    elif direction is Direction.SOUTH:
+    elif direction == Direction.SOUTH:
         move_backward()
-    elif direction is Direction.WEST:
+    elif direction == Direction.WEST:
         move_backward()
         turn_anticlockwise()
         move_forward()
@@ -194,15 +281,15 @@ def move_to(direction):
         DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
 
 def move_back(last_move):
-    if last_move is not Direction.NORTH:
+    if last_move != Direction.NORTH:
         move_forward()
     if last_move == Direction.WEST:
         turn_clockwise()
     elif last_move == Direction.EAST:
         turn_anticlockwise()
-    if last_move is not Direction.SOUTH:
+    if last_move != Direction.SOUTH:
         move_backward()
-    if last_move is Direction.WEST or last_move is Direction.EAST:
+    if last_move == Direction.WEST or last_move == Direction.EAST:
         DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving back to the previous node
 
 def dfs(node):
@@ -231,7 +318,7 @@ def dfs(node):
                 sound.speak("Red")
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
-                time.sleep(1000)
+                time.sleep(1)
                 leds.reset()
 
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
@@ -239,7 +326,7 @@ def dfs(node):
                 sound.speak("Green")
                 leds.set_color("LEFT", "GREEN")
                 leds.set_color("RIGHT", "GREEN")
-                time.sleep(1000)
+                time.sleep(1)
                 leds.reset()
 
             dfs(neighbour)
