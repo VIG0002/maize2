@@ -80,6 +80,10 @@ CS_PIN = INPUT_4
 CS = ColorSensor(CS_PIN)
 CS_MIDPOINT = Point(0, 0) # technically 'ctrpoint'
 
+DISPENSER_MOTOR_PIN = OUTPUT_D
+DISPENSER_MOTOR = MediumMotor(DISPENSER_MOTOR_PIN)
+DISPENSER_MOTOR_SPEED = Speed.SLOW
+
 MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
 
 REFLECTED_LIGHT_THRESHOLD = 75
@@ -218,7 +222,7 @@ def move_back(last_move):
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit by rotating the medium motor.'''
-    MediumMotor(OUTPUT_D).on_for_degrees(SpeedPercent(Speed.SLOW), 90)
+    DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 90)
 
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes.'''
