@@ -162,7 +162,6 @@ def look_around():
     return directions
 
 def move_forward():
-    '''Move the robot forward by one tile width, adjusting for the robot's height and the tile width. If the robot is on a start tile, it moves a different distance. If the robot is on a NOGO tile, it moves backward instead.'''
     global last_tile_was_start
     if tile_type() == TileType.START:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
@@ -176,7 +175,6 @@ def move_forward():
             move_backward()
 
 def move_backward():
-    '''Move the robot backward by one tile width, adjusting for the robot's height and the tile width. If the last tile was a start tile, it moves a different distance.'''
     if last_tile_was_start == True:
         DRIVE.on_for_distance(SPEED * -1, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
     else:
