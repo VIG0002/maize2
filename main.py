@@ -67,7 +67,7 @@ WHEEL_MIDPOINT_GAP = 98 # measured: 88
 WHEEL_MIDPOINT_GAP_MIDPOINT = Point(0, -28)
 WHEEL_POLARITY = Motor.POLARITY_NORMAL
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
-TURNING_DEGREES = 36
+TURNING_DEGREES = 36 # NOTE: A bit off. I need to make it plus or minus 1 or 2 degrees. Experiment. 
 
 # ULTRASONIC SENSOR
 US_PIN = INPUT_3
@@ -201,7 +201,7 @@ def move_to(direction):
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # TODO: There's something wrong with this amount. 
     else:
         move_backward()
         turn_clockwise()
@@ -270,7 +270,7 @@ def dfs(node):
 if __name__ == "__main__":
     start = Node()
     start.tile_type = TileType.START
-    dfs(start) 
+    dfs(start) # TODO: Adjust for the drop off the start tile.
     sound.speak("Done", volume=100)
     leds.animate_rainbow() 
     sound.speak(f"There were {harmed_victim_number} harmed victims and {unharmed_victim_number} unharmed victims.", volume=100)
