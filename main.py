@@ -4,10 +4,12 @@ That makes complete sense about the stall timeout in the source code—clever us
 Since you have already fixed the comparison operators, let's focus entirely on calibrating the direction tracking.
 To fix the issue where the robot's physical heading gets out of sync with the absolute map directions (North, East, South, West), you need to track the robot's absolute compass heading and use it to translate your movements and sensor scans.
 Here is exactly how to add that calibration logic to your existing functions:
+
 ## 1. Add a Global Heading Variable
 At the top of your script (near your other global variables like visited), add a variable to track which absolute direction the robot chassis is currently facing:
 
-# Initialize the robot facing absolute NORTH at the start of the mazecurrent_heading = Direction.NORTH  
+# Initialize the robot facing absolute NORTH at the start of the maze
+current_heading = Direction.NORTH  
 
 ## 2. Calibrate look_around()
 Right now, look_around() assumes its relative scans match the map. You need to calibrate the relative sensor direction (d_rel) using the current_heading to find the absolute map direction (d_abs):
@@ -83,9 +85,8 @@ def move_back(last_move):
     current_heading = Direction((last_move + 180) % 360) 
 
 Would you like to double-check the exact wheel turn angle math (90 - TURNING_DEGREES) to ensure the robot finishes perfectly square with the walls after its shift?
-
-
 """
+
 from enum import IntEnum, Enum
 from ev3dev2.motor import MoveDifferential, SpeedPercent, Motor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 from ev3dev2.wheel import EV3Tire
