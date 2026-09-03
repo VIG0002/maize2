@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
+
 """
-That makes complete sense about the stall timeout in the source code—clever use of the built-in safety to handle the physical hard stops.
-Since you have already fixed the comparison operators, let's focus entirely on calibrating the direction tracking.
-To fix the issue where the robot's physical heading gets out of sync with the absolute map directions (North, East, South, West), you need to track the robot's absolute compass heading and use it to translate your movements and sensor scans.
 Here is exactly how to add that calibration logic to your existing functions:
 
 ## 1. Add a Global Heading Variable
@@ -84,7 +82,6 @@ def move_back(last_move):
     # To step back, we subtract the change or compute it via the parent node's expected orientation
     current_heading = Direction((last_move + 180) % 360) 
 
-Would you like to double-check the exact wheel turn angle math (90 - TURNING_DEGREES) to ensure the robot finishes perfectly square with the walls after its shift?
 """
 
 from enum import IntEnum, Enum
