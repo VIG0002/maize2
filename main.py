@@ -47,28 +47,32 @@ class TileType(Enum):
     HARMED_VICTIM = 3
     UNHARMED_VICTIM = 4
 
-# MAZE:
+## MAZE:
 TILE_WIDTH = 290
 VICTIM_WIDTH = 50
-
 TILE_HALF_WIDTH = TILE_WIDTH / 2
+MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
 
-# ROBOT: all coordinates are relative to the robot origin
+## ROBOT
 SPEED = Speed.SLOW
 
 ROBOT_WIDTH = 135
 ROBOT_HEIGHT = 182
 
+# WHEELS
 LEFT_WHEEL_PIN = OUTPUT_A
-RIGHT_WHEEL_PIN = OUTPUT_B
+RIGHT_WHEEL_PIN = OUTPUT_D
 WHEEL_TYPE = EV3Tire
 WHEEL_MIDPOINT_GAP = 98 # measured: 88
 WHEEL_MIDPOINT_GAP_MIDPOINT = Point(0, -28)
 WHEEL_POLARITY = Motor.POLARITY_NORMAL
+DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
+TURNING_DEGREES = 36
 
+# ULTRASONIC SENSOR
 US_PIN = INPUT_3
 US = UltrasonicSensor(US_PIN)
-US_MOTOR_PIN = OUTPUT_C
+US_MOTOR_PIN = OUTPUT_B
 US_MOTOR = MediumMotor(US_MOTOR_PIN)
 US_MOTOR_MIDPOINT = Point(0, -52)
 US_MOTOR_POLARITY = Motor.POLARITY_NORMAL
@@ -76,22 +80,17 @@ US_MOTOR_SPEED = Speed.SLOW
 US_REL_DIRECTION = Direction.NORTH
 US_NINETY_DEGREES = 97
 
+# COLOUR SENSOR
 CS_PIN = INPUT_4
 CS = ColorSensor(CS_PIN)
-CS_MIDPOINT = Point(0, 0) # technically 'ctrpoint'
+CS.mode = 'COL-COLOR'
 
+# DISPENSER MOTOR
 DISPENSER_MOTOR_PIN = OUTPUT_D
 DISPENSER_MOTOR = MediumMotor(DISPENSER_MOTOR_PIN)
 DISPENSER_MOTOR_SPEED = Speed.SLOW
 
-MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
-
-REFLECTED_LIGHT_THRESHOLD = 75
-
-DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
-TURNING_DEGREES = 45
-TIMESLEEP = 200/1000
-
+## GLOBAL VARIABLES
 visited = set()
 harmed_victim_number = 0
 unharmed_victim_number = 0
@@ -107,7 +106,7 @@ class Node:
         self.tile_type = None
 
     def get_neighbour(self, direction):
-        '''Return the neighbour node in the given direction, or None if there is no neighbour in that direction.'''
+        '''Return the neighbour node in the given direction.'''
         return self.neighbours[direction]
 
     def set_neighbour(self, direction, neighbour):
@@ -115,19 +114,22 @@ class Node:
         self.neighbours[direction] = neighbour
 
 def tile_type():
-    '''Return the type of tile the robot is currently on, based on the color sensor reading.'''
+    '''Return the type of tile the robot is currently on, based on the colour sensor reading.'''
     color_value = Color(CS.color)       
-    if CS.reflected_light_intensity >= REFLECTED_LIGHT_THRESHOLD:
-        return TileType.START
-    elif color_value == Color.WHITE:
+    if color_value == Color.WHITE:
+        CS.mode = 'COL-COLOR'
         return TileType.NORMAL
     elif color_value == Color.BLACK:
+        CS.mode = 'COL-COLOR'
         return TileType.NOGO
     elif color_value == Color.RED:
+        CS.mode = 'COL-COLOR'
         return TileType.HARMED_VICTIM
     elif color_value == Color.GREEN:
+        CS.mode = 'COL-COLOR'
         return TileType.UNHARMED_VICTIM
     else:
+        CS.mode = 'COL-COLOR'
         return TileType.NORMAL # default to normal if unknown color
 
 def us_turn_to(direction):
@@ -145,7 +147,6 @@ def us_turn_to(direction):
         US_MOTOR.off()
 
     elif direction == Direction.NORTH:
-        # move from the left/right, to the center (north)
         US_MOTOR.on_for_degrees(SpeedPercent((1 if US_REL_DIRECTION == Direction.WEST else -1) * US_MOTOR_SPEED), degrees=US_NINETY_DEGREES)
 
     US_REL_DIRECTION = direction
@@ -185,10 +186,10 @@ def move_backward():
         DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) 
 
 def turn_anticlockwise():
-    DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES) # For now
+    DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES)
 
 def turn_clockwise():
-    DRIVE.turn_degrees(SPEED, TURNING_DEGREES) # For now
+    DRIVE.turn_degrees(SPEED, TURNING_DEGREES)
         
 def move_to(direction):
     '''Move the robot to the neighbouring node in the given direction. '''
@@ -200,12 +201,12 @@ def move_to(direction):
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
     else:
         move_backward()
         turn_clockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES)
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
 
 def move_back(last_move):
     '''Reverse the last move made by the robot, returning it to the previous node.'''
@@ -218,14 +219,14 @@ def move_back(last_move):
     if last_move != Direction.SOUTH:
         move_backward()
     if last_move == Direction.WEST or last_move == Direction.EAST:
-        DRIVE.turn_degrees(SPEED, 90 - TURNING_DEGREES) # Turn straight after moving back to the previous node
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit by rotating the medium motor.'''
     DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 90)
 
 def dfs(node):
-    '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes.'''
+    '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
     global visited, harmed_victim_number, unharmed_victim_number
     visited.add(node)
     open_directions = look_around()
@@ -249,7 +250,7 @@ def dfs(node):
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
                 dispense_rescue_kit()
-                sound.speak("Red")
+                sound.speak("Red", volume=100)
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
                 time.sleep(1)
@@ -257,7 +258,7 @@ def dfs(node):
 
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
                 unharmed_victim_number += 1
-                sound.speak("Green")
+                sound.speak("Green", volume=100)
                 leds.set_color("LEFT", "GREEN")
                 leds.set_color("RIGHT", "GREEN")
                 time.sleep(1)
@@ -270,5 +271,6 @@ if __name__ == "__main__":
     start = Node()
     start.tile_type = TileType.START
     dfs(start) 
-    sound.speak("Done")
+    sound.speak("Done", volume=100)
     leds.animate_rainbow() 
+    sound.speak(f"There were {harmed_victim_number} harmed victims and {unharmed_victim_number} unharmed victims.", volume=100)
