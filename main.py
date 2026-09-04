@@ -297,6 +297,6 @@ if __name__ == "__main__":
     us_turn_to(Direction.NORTH)
     start = Node()
     start.tile_type = TileType.START
-    dfs(start) # TODO: Adjust for the drop off the start tile.
+    dfs(start)
     sound.speak("Done", volume=100)
     leds.animate_rainbow()
