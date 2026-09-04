@@ -88,12 +88,12 @@ CS.mode = 'COL-COLOR'
 # TOUCH SENSOR
 LEFT_TS_PIN = INPUT_1
 RIGHT_TS_PIN = INPUT_2
-'''
+
 # DISPENSER MOTOR
 DISPENSER_MOTOR_PIN = OUTPUT_D
 DISPENSER_MOTOR = MediumMotor(DISPENSER_MOTOR_PIN)
 DISPENSER_MOTOR_SPEED = Speed.SLOW 
-'''
+
 ## GLOBAL VARIABLES
 visited = set()
 harmed_victim_number = 0
@@ -239,10 +239,9 @@ def move_back(last_move):
 
     current_heading = last_move
 
-'''
 def dispense_rescue_kit():
+    '''Dispense a rescue kit for a harmed victim.'''
     DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 360)
-'''
 
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
@@ -278,7 +277,7 @@ def dfs(node):
 
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
-                # dispense_rescue_kit()
+                dispense_rescue_kit()
                 sound.speak("Red", volume=100)
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
