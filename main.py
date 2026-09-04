@@ -259,7 +259,7 @@ def dfs(node):
 
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
-                '''dispense_rescue_kit()'''
+                dispense_rescue_kit()
                 sound.speak("Red", volume=100)
                 leds.set_color("LEFT", "RED")
                 leds.set_color("RIGHT", "RED")
@@ -280,6 +280,7 @@ def dfs(node):
 
     if not explored_child:
         return
+    
 if __name__ == "__main__":
     us_turn_to(Direction.NORTH)
     start = Node()
