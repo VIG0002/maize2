@@ -201,7 +201,7 @@ def move_to(direction):
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # TODO: There's something wrong with this amount. 
+        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES)) # TODO: There's something wrong with this amount. 
     else:
         move_backward()
         turn_clockwise()
@@ -218,8 +218,10 @@ def move_back(last_move):
         turn_anticlockwise()
     if last_move != Direction.SOUTH:
         move_backward()
-    if last_move == Direction.WEST or last_move == Direction.EAST:
+    if last_move == Direction.WEST:
         DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
+    elif last_move == Direction.EAST:
+        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit by rotating the medium motor.'''
