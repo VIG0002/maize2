@@ -159,6 +159,7 @@ def look_around():
         if (US.distance_centimeters * 10) > MAX_WALL_DETECTION_DISTANCE:
             directions.append(direction)
 
+    us_turn_to(Direction.NORTH) # Reset ultrasonic sensor to face north after looking around
     return directions
 
 def move_forward():
@@ -226,6 +227,12 @@ def dfs(node):
     global visited, harmed_victim_number, unharmed_victim_number
     visited.add(node)
     open_directions = look_around()
+    us_turn_to(Direction.NORTH)
+
+    if not open_directions:
+        return
+
+    explored_child = False
     for d in open_directions:
         if d not in node.neighbours:
             neighbour = Node()
@@ -244,7 +251,10 @@ def dfs(node):
                     neighbour.set_neighbour(direction, None)
                 visited.add(neighbour)
                 move_back(d)
+                us_turn_to(Direction.NORTH)
                 continue
+
+            explored_child = True
 
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 harmed_victim_number += 1
@@ -265,7 +275,10 @@ def dfs(node):
 
             dfs(neighbour)
             move_back(d)
+            us_turn_to(Direction.NORTH)
 
+    if not explored_child:
+        return
 if __name__ == "__main__":
     us_turn_to(Direction.NORTH)
     start = Node()
