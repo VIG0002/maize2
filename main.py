@@ -97,6 +97,7 @@ visited = set()
 harmed_victim_number = 0
 unharmed_victim_number = 0
 last_tile_was_start = None
+current_heading = Direction.NORTH
 
 leds = Leds()
 sound = Sound()
@@ -150,19 +151,21 @@ def us_turn_to(direction):
     
 def look_around():
     '''Return a list of directions that are open (no wall) from the current position.'''
-    directions = []
+    global current_heading
+    open_global_directions = []
 
-    for direction in [
+    for rel_dir in [
         Direction.NORTH,
         Direction.EAST,
         Direction.WEST,
     ]:
-        us_turn_to(direction)
+        us_turn_to(rel_dir)
         if (US.distance_centimeters * 10) > MAX_WALL_DETECTION_DISTANCE:
-            directions.append(direction)
+            global_dir = Direction((current_heading + rel_dir) % 360)
+            open_global_directions.append(global_dir)
 
     us_turn_to(Direction.NORTH) # Reset ultrasonic sensor to face north after looking around
-    return directions
+    return open_global_directions
 
 def move_forward():
     global last_tile_was_start
@@ -191,40 +194,50 @@ def turn_clockwise():
         
 def move_to(direction):
     '''Move the robot to the neighbouring node in the given direction. '''
-    if direction == Direction.NORTH:
+    global current_heading
+
+    turn_offset = (direction - current_heading) % 360
+    if turn_offset == 0:
         move_forward()
-    elif direction == Direction.SOUTH:
+    elif turn_offset == 180:
         move_backward()
-    elif direction == Direction.WEST:
+    elif turn_offset == 270:
         move_backward()
         turn_anticlockwise()
         move_forward()
         DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
-    else:
+    elif turn_offset == 90:
         move_backward()
         turn_clockwise()
         move_forward()
         DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
 
+    current_heading = direction
+
 def move_back(last_move):
     '''Reverse the last move made by the robot, returning it to the previous node.'''
-    if last_move != Direction.NORTH:
-        move_forward()
-    if last_move == Direction.WEST:
-        turn_clockwise()
-    elif last_move == Direction.EAST:
-        turn_anticlockwise()
-    if last_move != Direction.SOUTH:
+    global current_heading
+
+    if last_move == Direction.NORTH:
         move_backward()
-    if last_move == Direction.WEST:
-        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
+    elif last_move == Direction.SOUTH:
+        move_forward()
+    elif last_move == Direction.WEST:
+        move_backward()
+        turn_clockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
     elif last_move == Direction.EAST:
-        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
+        move_backward()
+        turn_anticlockwise()
+        move_forward()
+        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
+
+    current_heading = Direction((last_move + 180) % 360)
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit for a harmed victim.'''
-    pass
-    # DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 90)
+    pass # DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 90)
 
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
@@ -251,8 +264,6 @@ def dfs(node):
             neighbour.tile_type = tile_type()
 
             if neighbour.tile_type == TileType.NOGO:
-                for direction in [Direction.NORTH, Direction.EAST, Direction.WEST]:
-                    neighbour.set_neighbour(direction, None)
                 visited.add(neighbour)
                 move_back(d)
                 us_turn_to(Direction.NORTH)
