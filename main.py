@@ -233,7 +233,7 @@ def move_back(last_move):
         move_forward()
         DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
 
-    current_heading = Direction((last_move + 180) % 360)
+    current_heading = last_move
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit for a harmed victim.'''
