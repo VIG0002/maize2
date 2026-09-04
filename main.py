@@ -67,7 +67,7 @@ WHEEL_MIDPOINT_GAP = 98 # measured: 88
 WHEEL_MIDPOINT_GAP_MIDPOINT = Point(0, -28)
 WHEEL_POLARITY = Motor.POLARITY_NORMAL
 DRIVE = MoveDifferential(LEFT_WHEEL_PIN, RIGHT_WHEEL_PIN, WHEEL_TYPE, WHEEL_MIDPOINT_GAP, WHEEL_POLARITY)
-TURNING_DEGREES = 35 # NOTE: A bit off. I need to make it plus or minus 1 or 2 degrees. Experiment. 
+TURNING_DEGREES = 36 # NOTE: A bit off. I need to make it plus or minus 1 or 2 degrees. Experiment. 
 
 # ULTRASONIC SENSOR
 US_PIN = INPUT_3
@@ -203,12 +203,12 @@ def move_to(direction):
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED * -1, (US_NINETY_DEGREES - TURNING_DEGREES))
     elif turn_offset == 90:
         move_backward()
         turn_clockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED, (US_NINETY_DEGREES - TURNING_DEGREES))
 
     current_heading = direction
 
@@ -224,12 +224,12 @@ def move_back(last_move):
         move_backward()
         turn_clockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED, (US_NINETY_DEGREES - TURNING_DEGREES))
     elif last_move == Direction.EAST:
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED * -1, (US_NINETY_DEGREES - TURNING_DEGREES))
 
     current_heading = last_move
 
