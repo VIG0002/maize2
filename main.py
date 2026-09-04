@@ -2,8 +2,8 @@
 from enum import IntEnum, Enum
 from ev3dev2.motor import MoveDifferential, SpeedPercent, Motor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 from ev3dev2.wheel import EV3Tire
-from ev3dev2.sensor import INPUT_3, INPUT_4
-from ev3dev2.sensor.lego import UltrasonicSensor, ColorSensor
+from ev3dev2.sensor import INPUT_3, INPUT_4, INPUT_1, INPUT_2
+from ev3dev2.sensor.lego import UltrasonicSensor, ColorSensor, TouchSensor
 from shapely.geometry import Point
 from ev3dev2.sound import Sound
 from ev3dev2.led import Leds
@@ -85,6 +85,10 @@ CS_PIN = INPUT_4
 CS = ColorSensor(CS_PIN)
 CS.mode = 'COL-COLOR'
 
+# TOUCH SENSOR
+LEFT_TS_PIN = INPUT_1
+RIGHT_TS_PIN = INPUT_2
+
 # DISPENSER MOTOR
 DISPENSER_MOTOR_PIN = OUTPUT_D
 DISPENSER_MOTOR = MediumMotor(DISPENSER_MOTOR_PIN)
@@ -96,6 +100,7 @@ harmed_victim_number = 0
 unharmed_victim_number = 0
 last_tile_was_start = None
 current_heading = Direction.NORTH
+ts_map = {Direction.WEST: TouchSensor(LEFT_TS_PIN), Direction.EAST: TouchSensor(RIGHT_TS_PIN)}
 
 leds = Leds()
 sound = Sound()
@@ -167,7 +172,8 @@ def look_around():
 
 def move_forward():
     global last_tile_was_start
-    if tile_type() == TileType.START:
+    touching = bool(ts_map[Direction.WEST].is_pressed) and bool(ts_map[Direction.EAST].is_pressed)
+    if touching:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
         last_tile_was_start = True
     else:
