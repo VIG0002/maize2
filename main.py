@@ -86,9 +86,9 @@ CS = ColorSensor(CS_PIN)
 CS.mode = 'COL-COLOR'
 
 # DISPENSER MOTOR
-''' DISPENSER_MOTOR_PIN = OUTPUT_D
+DISPENSER_MOTOR_PIN = OUTPUT_D
 DISPENSER_MOTOR = MediumMotor(DISPENSER_MOTOR_PIN)
-DISPENSER_MOTOR_SPEED = Speed.SLOW '''
+DISPENSER_MOTOR_SPEED = Speed.SLOW 
 
 ## GLOBAL VARIABLES
 visited = set()
@@ -218,10 +218,11 @@ def move_back(last_move):
         DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
     elif last_move == Direction.EAST:
         DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES)) # Turn straight after moving back to the previous node
-'''
+
 def dispense_rescue_kit():
+    '''Dispense a rescue kit for a harmed victim.'''
     DISPENSER_MOTOR.on_for_degrees(SpeedPercent(DISPENSER_MOTOR_SPEED), 90)
-'''
+
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
     global visited, harmed_victim_number, unharmed_victim_number
