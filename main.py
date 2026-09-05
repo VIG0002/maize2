@@ -4,6 +4,7 @@ from ev3dev2.motor import MoveDifferential, SpeedPercent, Motor, MediumMotor, OU
 from ev3dev2.wheel import EV3Tire
 from ev3dev2.sensor import INPUT_3, INPUT_4, INPUT_1, INPUT_2
 from ev3dev2.sensor.lego import UltrasonicSensor, ColorSensor, TouchSensor
+from ev3dev2.button import Button
 from shapely.geometry import Point
 from ev3dev2.sound import Sound
 from ev3dev2.led import Leds
@@ -432,7 +433,9 @@ def dfs(node):
     print('[dfs] finished all open directions')
     
 if __name__ == "__main__":
-    print('[main] program started')
+    btn = Button()
+    btn.wait_for_pressed(['enter'])
+    print('[main] enter button pressed; starting program')
     us_turn_to(Direction.EAST)
     print('[main] ultrasonic sensor moved to EAST')
     us_turn_to(Direction.NORTH)
