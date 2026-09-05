@@ -115,21 +115,21 @@ class Node:
 
     def get_neighbour(self, direction):
         '''Return the neighbour node in the given direction.'''
-        print(f'[Node.get_neighbour] looking up direction={direction.name}')
+        print('[Node.get_neighbour] looking up direction={}'.format(direction.name))
         neighbour = self.neighbours[direction]
-        print(f'[Node.get_neighbour] found neighbour id={id(neighbour)}')
+        print('[Node.get_neighbour] found neighbour id={}'.format(id(neighbour)))
         return neighbour
 
     def set_neighbour(self, direction, neighbour):
         '''Set the neighbour node in the given direction.'''
         self.neighbours[direction] = neighbour
-        print(f'[Node.set_neighbour] direction={direction.name} neighbour id={id(neighbour)}')
+        print('[Node.set_neighbour] direction={} neighbour id={}'.format(direction.name, id(neighbour)))
 
 def tile_type():
     '''Return the type of tile the robot is currently on, based on the colour sensor reading.'''
     print('[tile_type] reading colour sensor')
     color_value = Color(CS.color)
-    print(f'[tile_type] colour={color_value.name}')
+    print('[tile_type] colour={}'.format(color_value.name))
     if color_value == Color.WHITE:
         print('[tile_type] colour is WHITE; returning NORMAL')
         return TileType.NORMAL
@@ -149,11 +149,11 @@ def tile_type():
 def us_turn_to(direction):
     '''Turn the ultrasonic sensor to face the given direction.'''
     global US_REL_DIRECTION
-    print(f'[us_turn_to] requested direction={direction.name}')
+    print('[us_turn_to] requested direction={}'.format(direction.name))
     assert direction != Direction.SOUTH
     print('[us_turn_to] direction is not SOUTH')
     assert US_REL_DIRECTION != Direction.SOUTH
-    print(f'[us_turn_to] current sensor direction={US_REL_DIRECTION.name} is valid')
+    print('[us_turn_to] current sensor direction={} is valid'.format(US_REL_DIRECTION.name))
 
     if US_REL_DIRECTION == direction:
         print('[us_turn_to] sensor is already facing requested direction; returning')
@@ -174,12 +174,12 @@ def us_turn_to(direction):
         print('[us_turn_to] rotated ultrasonic motor to NORTH')
 
     US_REL_DIRECTION = direction
-    print(f'[us_turn_to] updated sensor direction to {US_REL_DIRECTION.name}')
+    print('[us_turn_to] updated sensor direction to {}'.format(US_REL_DIRECTION.name))
     
 def look_around():
     '''Return a list of directions that are open (no wall) from the current position.'''
     global current_heading
-    print(f'[look_around] starting with robot heading={current_heading.name}')
+    print('[look_around] starting with robot heading={}'.format(current_heading.name))
     open_global_directions = []
     print('[look_around] created empty open directions list')
 
@@ -188,27 +188,27 @@ def look_around():
         Direction.EAST,
         Direction.WEST,
     ]:
-        print(f'[look_around] checking relative direction={rel_dir.name}')
+        print('[look_around] checking relative direction={}'.format(rel_dir.name))
         us_turn_to(rel_dir)
         distance = US.distance_centimeters * 10
-        print(f'[look_around] measured distance millimetres={distance}')
+        print('[look_around] measured distance millimetres={}'.format(distance))
         is_open = distance > MAX_WALL_DETECTION_DISTANCE
-        print(f'[look_around] is_open={is_open}')
+        print('[look_around] is_open={}'.format(is_open))
         if is_open:
             global_dir = Direction((current_heading + rel_dir) % 360)
-            print(f'[look_around] converted to global direction={global_dir.name}')
+            print('[look_around] converted to global direction={}'.format(global_dir.name))
             open_global_directions.append(global_dir)
-            print(f'[look_around] added {global_dir.name} to open directions')
+            print('[look_around] added {} to open directions'.format(global_dir.name))
 
     us_turn_to(Direction.NORTH) # Reset ultrasonic sensor to face north after looking around
-    print(f'[look_around] finished; open directions={[direction.name for direction in open_global_directions]}')
+    print('[look_around] finished; open directions={}'.format([direction.name for direction in open_global_directions]))
     return open_global_directions
 
 def move_forward():
     global last_tile_was_start
-    print(f'[move_forward] starting; robot heading={current_heading.name}')
+    print('[move_forward] starting; robot heading={}'.format(current_heading.name))
     touching = bool(ts_map[Direction.EAST].is_pressed) and bool(ts_map[Direction.WEST].is_pressed)
-    print(f'[move_forward] touch sensors indicate touching={touching}')
+    print('[move_forward] touch sensors indicate touching={}'.format(touching))
     if touching:
         print('[move_forward] both touch sensors pressed; using start-tile distance')
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
@@ -229,7 +229,7 @@ def move_forward():
             print('[move_forward] destination is NOGO; stopped after first half')
 
 def move_backward():
-    print(f'[move_backward] starting; last_tile_was_start={last_tile_was_start}')
+    print('[move_backward] starting; last_tile_was_start={}'.format(last_tile_was_start))
     if last_tile_was_start == True:
         print('[move_backward] reversing from start tile')
         DRIVE.on_for_distance((SPEED * -1), (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
@@ -252,10 +252,10 @@ def turn_clockwise():
 def move_to(direction):
     '''Move the robot to the neighbouring node in the given direction. '''
     global current_heading
-    print(f'[move_to] requested direction={direction.name}; current heading={current_heading.name}')
+    print('[move_to] requested direction={}; current heading={}'.format(direction.name, current_heading.name))
 
     turn_offset = (direction - current_heading) % 360
-    print(f'[move_to] calculated turn offset={turn_offset}')
+    print('[move_to] calculated turn offset={}'.format(turn_offset))
     if turn_offset == 0:
         print('[move_to] offset 0; moving forward')
         move_forward()
@@ -284,12 +284,12 @@ def move_to(direction):
         print('[move_to] completed final alignment turn for offset 90')
 
     current_heading = direction
-    print(f'[move_to] updated robot heading={current_heading.name}')
+    print('[move_to] updated robot heading={}'.format(current_heading.name))
 
 def move_back(last_move):
     '''Reverse the last move made by the robot, returning it to the previous node.'''
     global current_heading
-    print(f'[move_back] starting; last_move={last_move.name}; current heading={current_heading.name}')
+    print('[move_back] starting; last_move={}; current heading={}'.format(last_move.name, current_heading.name))
 
     if last_move == Direction.NORTH:
         print('[move_back] last move NORTH; moving backward')
@@ -319,7 +319,7 @@ def move_back(last_move):
         print('[move_back] final alignment turn complete for EAST')
 
     current_heading = last_move
-    print(f'[move_back] updated robot heading={current_heading.name}')
+    print('[move_back] updated robot heading={}'.format(current_heading.name))
 
 def dispense_rescue_kit():
     '''Dispense a rescue kit for a harmed victim.'''
@@ -329,11 +329,11 @@ def dispense_rescue_kit():
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
     global visited, harmed_victim_number, unharmed_victim_number, current_heading
-    print(f'[dfs] entering node id={id(node)} heading={current_heading.name}')
+    print('[dfs] entering node id={} heading={}'.format(id(node), current_heading.name))
     visited.add(node)
-    print(f'[dfs] added node to visited; visited count={len(visited)}')
+    print('[dfs] added node to visited; visited count={}'.format(len(visited)))
     open_directions = look_around()
-    print(f'[dfs] open directions={[direction.name for direction in open_directions]}')
+    print('[dfs] open directions={}'.format([direction.name for direction in open_directions]))
     us_turn_to(Direction.NORTH)
     print('[dfs] reset ultrasonic sensor to NORTH')
 
@@ -344,38 +344,38 @@ def dfs(node):
     explored_child = False
     print('[dfs] set explored_child=False')
     for d in open_directions:
-        print(f'[dfs] beginning direction iteration d={d.name}')
+        print('[dfs] beginning direction iteration d={}'.format(d.name))
         if d not in node.neighbours:
-            print(f'[dfs] direction {d.name} has no neighbour; creating one')
+            print('[dfs] direction {} has no neighbour; creating one'.format(d.name))
             neighbour = Node()
-            print(f'[dfs] created neighbour id={id(neighbour)}')
+            print('[dfs] created neighbour id={}'.format(id(neighbour)))
             node.set_neighbour(d, neighbour)
-            print(f'[dfs] stored neighbour in direction {d.name}')
+            print('[dfs] stored neighbour in direction {}'.format(d.name))
             neighbour.set_neighbour((Direction((d + 180) % 360)), node)
-            print(f'[dfs] stored reverse neighbour direction={Direction((d + 180) % 360).name}')
+            print('[dfs] stored reverse neighbour direction={}'.format(Direction((d + 180) % 360).name))
         else:
-            print(f'[dfs] direction {d.name} already has neighbour; retrieving it')
+            print('[dfs] direction {} already has neighbour; retrieving it'.format(d.name))
             neighbour = node.get_neighbour(d)
-            print(f'[dfs] retrieved neighbour id={id(neighbour)}')
+            print('[dfs] retrieved neighbour id={}'.format(id(neighbour)))
 
         if neighbour not in visited:
-            print(f'[dfs] neighbour id={id(neighbour)} is unvisited')
+            print('[dfs] neighbour id={} is unvisited'.format(id(neighbour)))
             parent_heading = current_heading
-            print(f'[dfs] saved parent heading={parent_heading.name}')
+            print('[dfs] saved parent heading={}'.format(parent_heading.name))
             move_to(d)
-            print(f'[dfs] completed move_to({d.name})')
+            print('[dfs] completed move_to({})'.format(d.name))
 
             neighbour.tile_type = tile_type()
-            print(f'[dfs] recorded neighbour tile_type={neighbour.tile_type.name}')
+            print('[dfs] recorded neighbour tile_type={}'.format(neighbour.tile_type.name))
 
             if neighbour.tile_type == TileType.NOGO:
                 print('[dfs] neighbour is NOGO; marking visited and backing out')
                 visited.add(neighbour)
-                print(f'[dfs] marked NOGO neighbour visited; visited count={len(visited)}')
+                print('[dfs] marked NOGO neighbour visited; visited count={}'.format(len(visited)))
                 move_back(d)
-                print(f'[dfs] completed move_back({d.name}) for NOGO')
+                print('[dfs] completed move_back({}) for NOGO'.format(d.name))
                 current_heading = parent_heading
-                print(f'[dfs] restored parent heading={current_heading.name} after NOGO')
+                print('[dfs] restored parent heading={} after NOGO'.format(current_heading.name))
                 us_turn_to(Direction.NORTH)
                 print('[dfs] reset ultrasonic sensor to NORTH after NOGO')
                 continue
@@ -386,7 +386,7 @@ def dfs(node):
             if neighbour.tile_type == TileType.HARMED_VICTIM:
                 print('[dfs] found harmed victim')
                 harmed_victim_number += 1
-                print(f'[dfs] harmed victim count={harmed_victim_number}')
+                print('[dfs] harmed victim count={}'.format(harmed_victim_number))
                 dispense_rescue_kit()
                 print('[dfs] rescue kit action complete')
                 sound.speak("Red", volume=100)
@@ -403,7 +403,7 @@ def dfs(node):
             elif neighbour.tile_type == TileType.UNHARMED_VICTIM:
                 print('[dfs] found unharmed victim')
                 unharmed_victim_number += 1
-                print(f'[dfs] unharmed victim count={unharmed_victim_number}')
+                print('[dfs] unharmed victim count={}'.format(unharmed_victim_number))
                 sound.speak("Green", volume=100)
                 print('[dfs] spoke Green')
                 leds.set_color("LEFT", "GREEN")
@@ -416,15 +416,15 @@ def dfs(node):
                 print('[dfs] reset LEDs')
 
             dfs(neighbour)
-            print(f'[dfs] returned from child node id={id(neighbour)}')
+            print('[dfs] returned from child node id={}'.format(id(neighbour)))
             move_back(d)
-            print(f'[dfs] completed move_back({d.name}) after child')
+            print('[dfs] completed move_back({}) after child'.format(d.name))
             current_heading = parent_heading
-            print(f'[dfs] restored parent heading={current_heading.name} after child')
+            print('[dfs] restored parent heading={} after child'.format(current_heading.name))
             us_turn_to(Direction.NORTH)
             print('[dfs] reset ultrasonic sensor to NORTH after child')
         else:
-            print(f'[dfs] neighbour id={id(neighbour)} already visited; skipping')
+            print('[dfs] neighbour id={} already visited; skipping'.format(id(neighbour)))
 
     if not explored_child:
         print('[dfs] no child was explored; returning')
@@ -438,7 +438,7 @@ if __name__ == "__main__":
     us_turn_to(Direction.NORTH)
     print('[main] ultrasonic sensor moved to NORTH')
     start = Node()
-    print(f'[main] created start node id={id(start)}')
+    print('[main] created start node id={}'.format(id(start)))
     start.tile_type = TileType.START
     print('[main] set start tile_type=START')
     dfs(start)
