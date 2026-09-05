@@ -172,7 +172,7 @@ def look_around():
 
 def move_forward():
     global last_tile_was_start
-    touching = bool(ts_map[Direction.WEST].is_pressed) and bool(ts_map[Direction.EAST].is_pressed)
+    touching = bool(ts_map[Direction.EAST].is_pressed) and bool(ts_map[Direction.WEST].is_pressed)
     if touching:
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
         last_tile_was_start = True
@@ -181,8 +181,6 @@ def move_forward():
         DRIVE.on_for_distance(SPEED, (TILE_WIDTH / 2 + 15))
         if tile_type() != TileType.NOGO:
             DRIVE.on_for_distance(SPEED, (TILE_WIDTH / 2 - 15))
-        else:
-            move_backward()
 
 def move_backward():
     if last_tile_was_start == True:
@@ -245,7 +243,7 @@ def dispense_rescue_kit():
 
 def dfs(node):
     '''Depth-first search algorithm to explore the maze. The robot will visit each node, check for victims, and keep track of visited nodes. It will also dispense rescue kits for harmed victims and keep count of harmed and unharmed victims.'''
-    global visited, harmed_victim_number, unharmed_victim_number
+    global visited, harmed_victim_number, unharmed_victim_number, current_heading
     visited.add(node)
     open_directions = look_around()
     us_turn_to(Direction.NORTH)
@@ -263,6 +261,7 @@ def dfs(node):
             neighbour = node.get_neighbour(d)
 
         if neighbour not in visited:
+            parent_heading = current_heading
             move_to(d)
 
             neighbour.tile_type = tile_type()
@@ -270,6 +269,7 @@ def dfs(node):
             if neighbour.tile_type == TileType.NOGO:
                 visited.add(neighbour)
                 move_back(d)
+                current_heading = parent_heading
                 us_turn_to(Direction.NORTH)
                 continue
 
@@ -294,6 +294,7 @@ def dfs(node):
 
             dfs(neighbour)
             move_back(d)
+            current_heading = parent_heading
             us_turn_to(Direction.NORTH)
 
     if not explored_child:
