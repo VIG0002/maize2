@@ -51,7 +51,7 @@ class TileType(Enum):
 TILE_WIDTH = 290
 VICTIM_WIDTH = 50
 TILE_HALF_WIDTH = TILE_WIDTH / 2
-MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH / 2
+MAX_WALL_DETECTION_DISTANCE = TILE_WIDTH
 
 ## ROBOT
 SPEED = Speed.SLOW
@@ -178,18 +178,18 @@ def move_forward():
         last_tile_was_start = True
     else:
         last_tile_was_start = False
-        DRIVE.on_for_distance(SPEED, (TILE_WIDTH / 2 + 15))
+        DRIVE.on_for_distance(SPEED, ((TILE_WIDTH / 2) + 15))
         if tile_type() != TileType.NOGO:
-            DRIVE.on_for_distance(SPEED, (TILE_WIDTH / 2 - 15))
+            DRIVE.on_for_distance(SPEED, ((TILE_WIDTH / 2) - 15))
 
 def move_backward():
     if last_tile_was_start == True:
-        DRIVE.on_for_distance(SPEED * -1, (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
+        DRIVE.on_for_distance((SPEED * -1), (TILE_WIDTH - (ROBOT_HEIGHT - TILE_WIDTH / 2)))
     else:
-        DRIVE.on_for_distance(SPEED * -1, TILE_WIDTH) 
+        DRIVE.on_for_distance((SPEED * -1), TILE_WIDTH)
 
 def turn_anticlockwise():
-    DRIVE.turn_degrees(SPEED * -1, TURNING_DEGREES)
+    DRIVE.turn_degrees(SPEED, TURNING_DEGREES * -1)
 
 def turn_clockwise():
     DRIVE.turn_degrees(SPEED, TURNING_DEGREES)
@@ -207,12 +207,12 @@ def move_to(direction):
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED * -1, (US_NINETY_DEGREES - TURNING_DEGREES))
+        DRIVE.turn_degrees((SPEED * -1), (90 - TURNING_DEGREES))
     elif turn_offset == 90:
         move_backward()
         turn_clockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (US_NINETY_DEGREES - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
 
     current_heading = direction
 
@@ -228,12 +228,12 @@ def move_back(last_move):
         move_backward()
         turn_clockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED, (US_NINETY_DEGREES - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED, (90 - TURNING_DEGREES))
     elif last_move == Direction.EAST:
         move_backward()
         turn_anticlockwise()
         move_forward()
-        DRIVE.turn_degrees(SPEED * -1, (US_NINETY_DEGREES - TURNING_DEGREES))
+        DRIVE.turn_degrees(SPEED * -1, (90 - TURNING_DEGREES))
 
     current_heading = last_move
 
