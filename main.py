@@ -301,6 +301,7 @@ def dfs(node):
         return
     
 if __name__ == "__main__":
+    us_turn_to(Direction.EAST)
     us_turn_to(Direction.NORTH)
     start = Node()
     start.tile_type = TileType.START
